@@ -4021,6 +4021,6 @@ local packageName, addonName = "Twitch", ...
 
 CEL.RegisterPackage({
 	name = packageName,
-	path = format("Interface/AddOns/%s/emotes_twitch", addonName),
+	path = format("Interface/AddOns/%s/emotes", addonName),
 	emotes = emotes,
 })
