@@ -2,13 +2,11 @@
 ## Title: Chat Emotes (Twitch)
 ## Notes: 
 ## Author: Vladinator (Vladinator-TarrenMill)
-## Version: 9.1.5.211201 (@project-version@)
+## Version: 9.1.5.211205 (@project-version@)
 ## SavedVariables: 
 ## Dependencies: ChatEmotes
 ## X-Curse-Project-ID: 551604
 ## X-WoWI-ID: 26190
 ## X-Wago-ID: kRNLZ8Ko
 ## X-AddonProvider: github
-../ChatEmotes/libs/LibStub/LibStub.lua
-../ChatEmotes/libs/ChatEmotesLib-1.0/ChatEmotesLib-1.0.lua
 core.lua
