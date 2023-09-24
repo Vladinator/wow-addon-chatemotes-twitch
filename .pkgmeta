@@ -1,2 +1,4 @@
 package-as: ChatEmotesTwitch
 enable-nolib-creation: no
+ignore:
+  - BTTV.ps1
