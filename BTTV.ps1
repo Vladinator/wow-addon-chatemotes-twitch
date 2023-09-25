@@ -2,6 +2,13 @@ $baseFolder = Get-Item -Path ".\emotes\BTTV"
 $folders = Get-ChildItem -Path $baseFolder -Directory
 $lua = @()
 
+$alias = @{
+	"BOOBA" = @("booba")
+	"catJAM" = @("CatJam", "CatJAM")
+	"pepeD" = @("PepeD")
+	"PepeLaugh" = @("FeelsKekMan")
+}
+
 foreach ($folder in $folders)
 {
 
@@ -10,15 +17,29 @@ foreach ($folder in $folders)
 	$name = $first.Directory.Name
 	$frame = [IO.Path]::GetFileNameWithoutExtension($file)
 
-	$frames_files = Get-ChildItem -Path $folder -Filter *.png
+	$frames_files = (Get-ChildItem -Path $folder -Filter *.png) + (Get-ChildItem -Path $folder -Filter *.blp)
 	$durations = [int[]]::new($frames_files.Count)
+	$corrupt_frames = 0
 
 	foreach ($frame_file in $frames_files)
 	{
-		if ($frame_file.Name -match "_(\d+)_(\d+)_(\d+)\.png$")
+		if ($frame_file.Name -match "_(\d+)_(\d+)_(\d+)\.(png|blp)$")
 		{
-			$durations[+$matches[1]-1] = +$matches[3]
+			$i = +$matches[1] - 1
+			if ($i -gt $durations.Count)
+			{
+				$corrupt_frames++
+			}
+			else
+			{
+				$durations[$i] = +$matches[3]
+			}
 		}
+	}
+
+	if ($corrupt_frames -gt 0)
+	{
+		Write-Error ("""{0}"" has {1} corrupt frames" -f $name, $corrupt_frames)
 	}
 
 	$durations_trimmed = @()
@@ -43,7 +64,18 @@ foreach ($folder in $folders)
 		$lua_duration = "duration = { $($durations_trimmed -join ", ") }"
 	}
 
-	$lua += "{ name = `"$name`", file = `"$name/$frame`", animated = true, $lua_duration },"
+	$aliases = $alias[$name]
+	if ($aliases)
+	{
+		$aliases = $aliases -join '", "'
+		$aliases = " alias = { `"$aliases`" },"
+	}
+	else
+	{
+		$aliases = ""
+	}
+
+	$lua += "{ name = `"$name`",$aliases file = `"$name/$frame`", animated = true, $lua_duration },"
 
 }
 
