@@ -24,6 +24,43 @@ foreach ($webpFile in $webpFiles)
 
 	& webp_frames $webpFile @args
 
+	$folderFileSelector = Join-Path -Path $outputFolderPath -ChildPath "*_*_*_*.png"
+	$folderFiles = Get-ChildItem -Path $folderFileSelector | Sort-Object { [regex]::Replace($_.Name, "\d+", { $args[0].Value.PadLeft(20) }) }
+	$prevFolderFile = $null
+
+	foreach ($folderFile in $folderFiles)
+	{
+		$stdoutFile = [System.IO.Path]::GetTempFileName()
+		$stderrFile = [System.IO.Path]::GetTempFileName()
+		$process = Start-Process -FilePath "magick" -ArgumentList "convert `"$($folderFile.FullName)`" -define png:bit-depth=8 -define png:color-type=6 -define png:compression-level=9 -define png:compression-strategy=2 -define png:filter-type=5 -define png:compression-filter=4 -define png:exclude-chunk=all -define png:transparency-threshold=128 -define png:interlace-type=0 `"$($folderFile.FullName)`"" -NoNewWindow -PassThru -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
+		$process.WaitForExit()
+		$stdoutText = Get-Content -Path $stdoutFile
+		$stderrText = Get-Content -Path $stderrFile
+		Remove-Item $stdoutFile
+		Remove-Item $stderrFile
+		$stdText = @()
+		if ($stdoutText.Length -gt 0) { $stdText += $stdoutText }
+		if ($stderrText.Length -gt 0) { $stdText += $stderrText }
+		$stdText = $stdText -join "`r`n"
+		if ($stdText.Length -gt 0)
+		{
+			if ($stdText.Contains("convert: Cannot write image with defined png:bit-depth or png:color-type."))
+			{
+				Write-Warning ("""{0}"" {1}" -f $name, $stdText)
+				if (-not $prevFolderFile)
+				{
+					$prevFolderFile = $folderFiles[1]
+				}
+				Copy-Item $prevFolderFile $folderFile -Force
+			}
+			else
+			{
+				Write-Error ("""{0}"" {1}" -f $name, $stdText)
+			}
+		}
+		$prevFolderFile = $folderFile
+	}
+
 }
 
 $folders = Get-ChildItem -Path $baseFolder -Directory
@@ -80,6 +117,7 @@ foreach ($folder in $folders)
 
 	$firstFrame = $emote.Frames[0]
 	$firstFrameInfo = & magick identify -verbose -format "%w %h" "$($firstFrame.File.FullName)"
+
 	if (-not ($firstFrameInfo -match "^\s*(\d+)\s+(\d+)\s*$"))
 	{
 		Write-Error ("""{0}"" could not extract image dimensions" -f $name)
@@ -90,10 +128,49 @@ foreach ($folder in $folders)
 	$emote.Height = +$matches[1]
 	$emote.Valid = $true
 
+	$emoteFolder = Join-Path -Path $baseFolder -ChildPath $emote.Name
+	$processBLPs = @()
+
 	foreach ($frame in $emote.Frames)
 	{
+
 		$frame.File = $frame.File.Name
 		$emote.Duration += $frame.Duration
+
+		$frameFilePathBLP = Join-Path -Path $emoteFolder -ChildPath $frame.File.Replace(".png", ".blp")
+
+		if (Test-Path $frameFilePathBLP)
+		{
+			continue
+		}
+
+		$frameFilePath = Join-Path -Path $emoteFolder -ChildPath $frame.File
+		$frameFile = Get-Item -LiteralPath $frameFilePath
+
+		$processBLPs += $frameFile.FullName
+
+	}
+
+	if ($processBLPs.Count -gt 0)
+	{
+
+		Write-Host ("""{0}"" converting {1} PNG to BLP" -f $emote.Name, $processBLPs.Count)
+
+		& blppng @processBLPs
+
+		foreach ($frameFileFullName in $processBLPs)
+		{
+
+			$frameFilePathBLP = $frameFileFullName.Replace(".png", ".blp")
+			$frameFileBLP = Get-Item -LiteralPath $frameFilePathBLP -ErrorAction SilentlyContinue
+
+			if (-not $frameFileBLP -or $frameFileBLP.Length -eq 0)
+			{
+				Write-Error ("""{0}"" unable to convert frame ""{1}""" -f $emote.Name, $frame.File)
+			}
+
+		}
+
 	}
 
 	if ($keep)
@@ -192,31 +269,7 @@ if ($combined)
 			continue
 		}
 
-		$emoteFolder = Join-Path -Path $baseFolder -ChildPath $emote.Name
-
-		foreach ($frame in $emote.Frames)
-		{
-
-			$frameFilePathBLP = Join-Path -Path $emoteFolder -ChildPath $frame.File.Replace(".png", ".blp")
-
-			if (Test-Path $frameFilePathBLP)
-			{
-				continue
-			}
-
-			$frameFilePath = Join-Path -Path $emoteFolder -ChildPath $frame.File
-			$frameFile = Get-Item -LiteralPath $frameFilePath
-
-			& blppng "$($frameFile.FullName)"
-
-			$frameFileBLP = Get-Item -LiteralPath $frameFilePathBLP -ErrorAction SilentlyContinue
-
-			if (-not $frameFileBLP -or $frameFileBLP.Length -eq 0)
-			{
-				Write-Error ("""{0}"" unable to convert frame ""{1}""" -f $emote.Name, $frame.File)
-			}
-
-		}
+		Write-Host ("""{0}"" combining one animation file" -f $emote.Name)
 
 		$squareImage = New-Object System.Drawing.Bitmap -ArgumentList $emoteInfo.SquareSize, $emoteInfo.SquareSize
 		$squareGraphics = [System.Drawing.Graphics]::FromImage($squareImage)
