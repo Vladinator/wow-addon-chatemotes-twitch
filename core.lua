@@ -419,7 +419,7 @@ emotes["BTTV"] = {
 	{ name = "peepoClap", file = "peepoClap/peepoClap_1_2_10", animated = true, duration = 10 },
 	{ name = "peepoDJ", file = "peepoDJ/peepoDJ_1_72_2", animated = true, duration = 2 },
 	{ name = "peepoHey", file = "peepoHey/peepoHey_1_6_10", animated = true, duration = 10 },
-	{ name = "peepoLeave", file = "peepoLeave/peepoLeave_1_23_10", animated = true, duration = { [1] = 10, [2] = 70, [3] = 10, [23] = 70 } },
+	{ name = "peepoLeave", file = "peepoLeave/peepoLeave_1_29_10", animated = true, duration = { [1] = 10, [2] = 70, [3] = 10 } },
 	{ name = "peepoShy", file = "peepoShy/peepoShy_1_2_25", animated = true, duration = 25 },
 	{ name = "pepeD", alias = { "PepeD" }, file = "pepeD/pepeD_1_6_12", animated = true, duration = 12 },
 	{ name = "PepegaPls", file = "PepegaPls/PepegaPls_1_10_3", animated = true, duration = 3 },
@@ -441,10 +441,10 @@ emotes["BTTV"] = {
 	{ name = "sumSmash", file = "sumSmash/sumSmash_1_23_2", animated = true, duration = { [1] = 2, [12] = 4, [13] = 2 } },
 	{ name = "TriDance", file = "TriDance/TriDance_1_29_4", animated = true, duration = { [1] = 4, [8] = 12, [9] = 4, [15] = 12, [16] = 4, [22] = 12, [23] = 4 } },
 	{ name = "vibePls", file = "vibePls/vibePls_1_138_4", animated = true, duration = 4 },
-	{ name = "WAYTOODANK", file = "WAYTOODANK/WAYTOODANK_1_66_6", animated = true, duration = { [1] = 6, [2] = 2, [66] = 30 } },
+	{ name = "WAYTOODANK", file = "WAYTOODANK/WAYTOODANK_1_76_6", animated = true, duration = { [1] = 6, [2] = 2, [76] = 26 } },
 	{ name = "WeSmart", file = "WeSmart/WeSmart_1_27_4", animated = true, duration = { [1] = 4, [14] = 8, [15] = 4 } },
 	{ name = "whatBlink", file = "whatBlink/whatBlink_1_97_3", animated = true, duration = 3 },
-	{ name = "WowPls", file = "WowPls/WowPls_1_92_3", animated = true, duration = 3 },
+	{ name = "WowPls", file = "WowPls/WowPls_1_103_3", animated = true, duration = { [1] = 3, [103] = 15 } },
 }
 
 emotes["BTTV+FFZ"] = {

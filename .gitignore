@@ -33,4 +33,9 @@ nppBackup/
 
 # Misc
 *.ignore
-*.webp
+
+# Project
+/emotes/**/*.webp
+/emotes/**/*.gif
+/emotes/**/*.png
+/emotes/**/*.json
