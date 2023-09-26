@@ -1,15 +1,39 @@
-$cwd = Get-Item -Path "."
-$baseFolder = Get-Item -Path ".\emotes\BTTV"
-$webpFiles = Get-ChildItem -Path $baseFolder -Filter *.webp
-$keep = $args.Contains("--keep")
-$combined = $args.Contains("--combined")
-
 $alias = @{
 	"BOOBA" = @("booba")
 	"catJAM" = @("CatJam", "CatJAM")
 	"pepeD" = @("PepeD")
 	"PepeLaugh" = @("FeelsKekMan")
 }
+
+$download = $args.Contains("--download")
+$keep = $args.Contains("--keep")
+$combined = $args.Contains("--combined")
+
+$cwd = Get-Item -Path "."
+$baseFolder = Get-Item -Path ".\emotes\BTTV"
+
+if ($download)
+{
+	$json = Invoke-WebRequest -Uri "https://chatemotes.bool.no/?json" | ConvertFrom-Json
+	foreach ($item in $json)
+	{
+		if (-not $item.animated)
+		{
+			continue
+		}
+		if ($item.code -match "^[A-Za-z0-9_]+$")
+		{
+			$itemPath = Join-Path -Path $baseFolder -ChildPath "$($item.code).webp"
+			if (Test-Path $itemPath -PathType Leaf)
+			{
+				continue
+			}
+			Invoke-WebRequest -Uri "https://cdn.betterttv.net/emote/$($item.id)/3x.webp" -OutFile $itemPath
+		}
+	}
+}
+
+$webpFiles = Get-ChildItem -Path $baseFolder -Filter *.webp
 
 foreach ($webpFile in $webpFiles)
 {
@@ -156,7 +180,19 @@ foreach ($folder in $folders)
 
 		Write-Host ("""{0}"" converting {1} PNG to BLP" -f $emote.Name, $processBLPs.Count)
 
-		& blppng @processBLPs
+		$processBLPsBatchSize = 100
+
+		if ($processBLPs.Count -le $processBLPsBatchSize)
+		{
+			& blppng @processBLPs
+		}
+		else
+		{
+			for ($i = 0; $i -lt $processBLPs.Count; $i += $processBLPsBatchSize) {
+				$processBLPsBatch = $processBLPs[$i .. ($i + $processBLPsBatchSize - 1)]
+				& blppng @processBLPsBatch
+			}
+		}
 
 		foreach ($frameFileFullName in $processBLPs)
 		{
@@ -166,7 +202,7 @@ foreach ($folder in $folders)
 
 			if (-not $frameFileBLP -or $frameFileBLP.Length -eq 0)
 			{
-				Write-Error ("""{0}"" unable to convert frame ""{1}""" -f $emote.Name, $frame.File)
+				Write-Error ("""{0}"" unable to convert frame ""{1}""" -f $emote.Name, $frameFileFullName)
 			}
 
 		}
@@ -358,6 +394,30 @@ foreach ($emote in $emotes)
 		$aliases = ""
 	}
 
+	$luaRatio = ""
+	$webpFilePath = Join-Path -Path $baseFolder -ChildPath "$($name).webp"
+	if (Test-Path $webpFilePath -PathType Leaf)
+	{
+		$webpFileInfo = & webpinfo "$webpFilePath"
+		if (-not ($webpFileInfo -match "Canvas size (\d+) x (\d+)"))
+		{
+			Write-Error ("""{0}"" could not extract image dimensions" -f $name)
+		}
+		else
+		{
+			$origWidth = +$matches[1]
+			$origHeight = +$matches[2]
+			if ($origWidth -ne $origHeight)
+			{
+				$luaRatio = " ratio = {0:f}," -f ($origWidth/$origHeight)
+			}
+		}
+	}
+	else
+	{
+		Write-Warning ("""{0}"" missing original WEBP for original ratio" -f $name)
+	}
+
 	$firstFrame = $emote.Frames[0]
 	$firstFrameFile = [IO.Path]::GetFileNameWithoutExtension($firstFrame.File)
 	$luaFile = "$name/$firstFrameFile"
@@ -371,11 +431,11 @@ foreach ($emote in $emotes)
 			$luaCombinedSlots += $slot.Frame.Duration
 		}
 		$luaDuration = "duration = { $($luaCombinedSlots -join ", ") }"
-		$lua += "{ name = `"$name`",$aliases animated = true, textureSize = $($emoteInfo.SquareSize), contentSize = $($emoteInfo.FramesCountSqrt * $emote.Width), $($luaDuration) },"
+		$lua += "{{ name = `"{0}`",{1}{2} animated = true, textureSize = {3}, contentSize = {4}, {5} }}," -f $name, $aliases, $luaRatio, $emoteInfo.SquareSize, ($emoteInfo.FramesCountSqrt * $emote.Width), $luaDuration
 	}
 	else
 	{
-		$lua += "{ name = `"$name`",$aliases file = `"$luaFile`", animated = true, $($luaDuration) },"
+		$lua += "{{ name = `"{0}`",{1} file = `"{2}`",{3} animated = true, {4} }}," -f $name, $aliases, $luaFile, $luaRatio, $luaDuration
 	}
 
 }
