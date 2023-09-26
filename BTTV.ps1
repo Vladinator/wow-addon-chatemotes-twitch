@@ -1,3 +1,11 @@
+$codeReMap = @{
+	"(ditto)" = @{ code = ":ditto:"; file = "ditto" }
+}
+
+$nameReMap = @{
+	"ditto" = ":ditto:"
+}
+
 $alias = @{
 	"BOOBA" = @("booba")
 	"catJAM" = @("CatJam", "CatJAM")
@@ -21,14 +29,36 @@ if ($download)
 		{
 			continue
 		}
-		if ($item.code -match "^[A-Za-z0-9_]+$")
+		$itemFileName = $item.code
+		$itemFileNameReMap = $codeReMap[$itemFileName]
+		if ($itemFileNameReMap)
 		{
-			$itemPath = Join-Path -Path $baseFolder -ChildPath "$($item.code).webp"
+			if ($itemFileNameReMap.file)
+			{
+				$itemFileName = $itemFileNameReMap.file
+			}
+			if ($itemFileNameReMap.code)
+			{
+				$item.code = $itemFileNameReMap.code
+			}
+		}
+		$itemFileName = $item.code -replace "[\:]+", ""
+		if ($itemFileName -match "^[A-Za-z0-9_\-]+$")
+		{
+			if ($itemFileName -ne $item.code -and (-not $itemFileNameReMap -or (-not $itemFileNameReMap.code)))
+			{
+				Write-Warning ("""{0}"" requires manual validation: ""{1}""" -f $item.code, $itemFileName)
+			}
+			$itemPath = Join-Path -Path $baseFolder -ChildPath "$($itemFileName).webp"
 			if (Test-Path $itemPath -PathType Leaf)
 			{
 				continue
 			}
 			Invoke-WebRequest -Uri "https://cdn.betterttv.net/emote/$($item.id)/3x.webp" -OutFile $itemPath
+		}
+		else
+		{
+			Write-Warning ("""{0}"" unhandled name contents: ""{1}""" -f $item.code, $itemFileName)
 		}
 	}
 }
@@ -422,6 +452,11 @@ foreach ($emote in $emotes)
 	$firstFrameFile = [IO.Path]::GetFileNameWithoutExtension($firstFrame.File)
 	$luaFile = "$name/$firstFrameFile"
 
+	if ($nameReMap[$name])
+	{
+		$name = $nameReMap[$name]
+	}
+
 	if ($combined)
 	{
 		$luaCombinedSlots = @()
@@ -439,6 +474,8 @@ foreach ($emote in $emotes)
 	}
 
 }
+
+$lua = $lua | Sort-Object -Unique
 
 $luaBlock = @"
 emotes["BTTV"] = {
