@@ -1,9 +1,22 @@
 $codeReMap = @{
 	"(ditto)" = @{ code = ":ditto:"; file = "ditto" }
+	":tf:" = @{ code = ":tf:"; file = "tf" }
+	"M&Mjc" = @{ code = "MnMjc"; file = "MnMjc" }
+	"D:" = @{ code = "D:"; file = "D" }
+	"h!" = @{ code = ":bttvh:"; file = "h" }
+	"l!" = @{ code = ":bttvl:"; file = "l" }
+	"r!" = @{ code = ":bttvr:"; file = "r" }
+	"v!" = @{ code = ":bttvv:"; file = "v" }
+	"z!" = @{ code = ":bttvz:"; file = "z" }
+	"w!" = @{ code = ":bttvw:"; file = "w" }
+	"c!" = @{ code = ":bttvc:"; file = "c" }
 }
 
-$nameReMap = @{
-	"ditto" = ":ditto:"
+$nameReMap = @{}
+
+foreach ($key in $codeReMap.Keys) {
+	$name = $codeReMap[$key].file
+	$nameReMap[$name] = $codeReMap[$key].code
 }
 
 $alias = @{
@@ -16,6 +29,7 @@ $alias = @{
 $download = $args.Contains("--download")
 $keep = $args.Contains("--keep")
 $combined = $args.Contains("--combined")
+$save = $args.Contains("--save")
 
 $cwd = Get-Item -Path "."
 $baseFolder = Get-Item -Path ".\emotes\BTTV"
@@ -25,10 +39,6 @@ if ($download)
 	$json = Invoke-WebRequest -Uri "https://chatemotes.bool.no/?json" | ConvertFrom-Json
 	foreach ($item in $json)
 	{
-		if (-not $item.animated)
-		{
-			continue
-		}
 		$itemFileName = $item.code
 		$itemFileNameReMap = $codeReMap[$itemFileName]
 		if ($itemFileNameReMap)
@@ -63,20 +73,90 @@ if ($download)
 	}
 }
 
+function webp_info
+{
+	param(
+		[string] $InputFile
+	)
+	process
+	{
+		$lines = & webpinfo $InputFile
+		$animated = $null
+		$width = -1
+		$height = -1
+		$ratio = 1
+		$stretch = $false
+		foreach ($line in $lines)
+		{
+			if ($null -eq $animated -and $line -match "^\s*Animation:\s*(\d+)\s*$")
+			{
+				$animated = +$matches[1] -eq 1
+			}
+			if ($width -eq -1)
+			{
+				if ($line -match "^\s*Canvas\s+size\s+(\d+)\s*x\s*(\d+)\s*$")
+				{
+					$width = +$matches[1]
+					$height = +$matches[2]
+				}
+				elseif ($line -match "^\s*Width:\s*(\d+)\s*$")
+				{
+					$width = +$matches[1]
+				}
+			}
+			if ($height -eq -1)
+			{
+				if ($line -match "^\s*Height:\s*(\d+)\s*$")
+				{
+					$height = +$matches[1]
+				}
+			}
+		}
+		$valid = $width -gt -1 -and $height -gt -1
+		if ($valid)
+		{
+			$ratio = $width/$height
+			$stretch = $ratio -lt 0.9 -or $ratio -gt 1.1
+		}
+		return [PSCustomObject] @{
+			Animated = $animated
+			Width = $width
+			Height = $height
+			Ratio = $ratio
+			Stretch = $stretch
+			Valid = $valid
+		}
+	}
+}
+
 $webpFiles = Get-ChildItem -Path $baseFolder -Filter *.webp
 
 foreach ($webpFile in $webpFiles)
 {
 
 	$name = [IO.Path]::GetFileNameWithoutExtension($webpFile)
-	$outputFolderPath = Join-Path -Path $webpFile.Directory -ChildPath $name
+	$webpFileInfo = webp_info $webpFile
 
+	if (-not $webpFileInfo.Valid)
+	{
+		Write-Error ("""{0}"" unable to process image information" -f $name)
+		continue
+	}
+
+	$outputFolderPath = Join-Path -Path $webpFile.Directory -ChildPath $name
 	if (Test-Path $outputFolderPath -PathType Container)
 	{
 		continue
 	}
 
-	& webp_frames $webpFile @args
+	if ($webpFileInfo.Stretch -and (-not $webpFileInfo.Animated))
+	{
+		& webp_frames $webpFile @args --stretch
+	}
+	else
+	{
+		& webp_frames $webpFile @args
+	}
 
 	$folderFileSelector = Join-Path -Path $outputFolderPath -ChildPath "*_*_*_*.png"
 	$folderFiles = Get-ChildItem -Path $folderFileSelector | Sort-Object { [regex]::Replace($_.Name, "\d+", { $args[0].Value.PadLeft(20) }) }
@@ -128,6 +208,14 @@ foreach ($folder in $folders)
 
 	$folderFileSelector = Join-Path -Path $folderPath -ChildPath "*_*_*_*"
 	$folderFilesMixed = Get-ChildItem -Path $folderFileSelector
+	$animated = $true
+
+	if ($null -eq $folderFilesMixed)
+	{
+		$animated = $false
+		$folderFileSelector = Join-Path -Path $folderPath -ChildPath "$($name).*"
+		$folderFilesMixed = Get-ChildItem -Path $folderFileSelector
+	}
 
 	$folderFilesPNG = $folderFilesMixed | Where-Object { $_.Extension -eq ".png" }
 	$folderFilesBLP = $folderFilesMixed | Where-Object { $_.Extension -eq ".blp" }
@@ -147,7 +235,16 @@ foreach ($folder in $folders)
 
 	foreach ($folderFile in $folderFiles)
 	{
-		if ($folderFile.Name -match "^([^_]+)_(\d+)_(\d+)_(\d+)\.(.+)$")
+		if (-not $animated)
+		{
+			$emote.Frames += [PSCustomObject] @{
+				File = $folderFile
+				Current = 1
+				Total = 1
+				Duration = 0
+			}
+		}
+		elseif ($folderFile.Name -match "^([^_]+)_(\d+)_(\d+)_(\d+)\.(.+)$")
 		{
 			$current = +$matches[2]
 			$total = +$matches[3]
@@ -165,6 +262,17 @@ foreach ($folder in $folders)
 	{
 		Write-Error ("""{0}"" has no frames" -f $name)
 		continue
+	}
+
+	if ($emote.Frames.Count -eq 1)
+	{
+		$animated = $false
+		foreach ($frame in $emote.Frames)
+		{
+			$singleFilePath = Join-Path -Path $frame.File.Directory -ChildPath "$($name)$($frame.File.Extension)"
+			Move-Item -Path $frame.File -Destination $singleFilePath
+			$frame.File = Get-Item -LiteralPath $singleFilePath
+		}
 	}
 
 	$emote.Frames = $emote.Frames | Sort-Object -Property Current
@@ -406,11 +514,11 @@ foreach ($emote in $emotes)
 
 	if ($durationsTrimmed.Count -eq 1)
 	{
-		$luaDuration = "duration = $($durations[0])"
+		$luaDuration = ", duration = $($durations[0])"
 	}
 	else
 	{
-		$luaDuration = "duration = { $($durationsTrimmed -join ", ") }"
+		$luaDuration = ", duration = { $($durationsTrimmed -join ", ") }"
 	}
 
 	$aliases = $alias[$name]
@@ -428,24 +536,33 @@ foreach ($emote in $emotes)
 	$webpFilePath = Join-Path -Path $baseFolder -ChildPath "$($name).webp"
 	if (Test-Path $webpFilePath -PathType Leaf)
 	{
-		$webpFileInfo = & webpinfo "$webpFilePath"
-		if (-not ($webpFileInfo -match "Canvas size (\d+) x (\d+)"))
+		$webpFileInfo = webp_info $webpFilePath
+		if ($webpFileInfo.Valid)
 		{
-			Write-Error ("""{0}"" could not extract image dimensions" -f $name)
+			if ($webpFileInfo.Stretch -and (-not $webpFileInfo.Animated))
+			{
+				$luaRatio = ", ratio = {0:f}" -f $webpFileInfo.Ratio
+			}
 		}
 		else
 		{
-			$origWidth = +$matches[1]
-			$origHeight = +$matches[2]
-			if ($origWidth -ne $origHeight)
-			{
-				$luaRatio = " ratio = {0:f}," -f ($origWidth/$origHeight)
-			}
+			Write-Error ("""{0}"" could not extract image dimensions" -f $name)
 		}
 	}
 	else
 	{
 		Write-Warning ("""{0}"" missing original WEBP for original ratio" -f $name)
+	}
+
+	$animated = $emote.Frames.Count -gt 1
+	$luaAnimated = ""
+	if ($animated) 
+	{
+		$luaAnimated = ", animated = true"
+	}
+	else
+	{
+		$luaDuration = ""
 	}
 
 	$firstFrame = $emote.Frames[0]
@@ -465,12 +582,12 @@ foreach ($emote in $emotes)
 		{
 			$luaCombinedSlots += $slot.Frame.Duration
 		}
-		$luaDuration = "duration = { $($luaCombinedSlots -join ", ") }"
-		$lua += "{{ name = `"{0}`",{1}{2} animated = true, textureSize = {3}, contentSize = {4}, {5} }}," -f $name, $aliases, $luaRatio, $emoteInfo.SquareSize, ($emoteInfo.FramesCountSqrt * $emote.Width), $luaDuration
+		$luaDuration = ", duration = { $($luaCombinedSlots -join ", ") }"
+		$lua += "{{ name = `"{0}`",{1}{2}{3}, textureSize = {4}, contentSize = {5}{6} }}," -f $name, $aliases, $luaRatio, $luaAnimated, $emoteInfo.SquareSize, ($emoteInfo.FramesCountSqrt * $emote.Width), $luaDuration
 	}
 	else
 	{
-		$lua += "{{ name = `"{0}`",{1} file = `"{2}`",{3} animated = true, {4} }}," -f $name, $aliases, $luaFile, $luaRatio, $luaDuration
+		$lua += "{{ name = `"{0}`",{1} file = `"{2}`"{3}{4}{5} }}," -f $name, $aliases, $luaFile, $luaRatio, $luaAnimated, $luaDuration
 	}
 
 }
@@ -482,5 +599,40 @@ emotes["BTTV"] = {
 `t$($lua -join "`r`n`t")
 }
 "@
+
+if ($save)
+{
+	$coreFilePath = Join-Path -Path $cwd -ChildPath "core.lua"
+	$coreFile = Get-Item -LiteralPath $coreFilePath
+	$coreText = Get-Content $coreFile
+	$coreLines = $coreText -split "(`r`n|`r|`n)"
+	$blockStart = -1
+	$blockEnd = -1
+	for ($i = 0; $i -lt $coreLines.Count; $i++)
+	{
+		$line = $coreLines[$i]
+		if ($blockStart -eq -1 -and $line -eq "emotes[`"BTTV`"] = {")
+		{
+			$blockStart = $i
+		}
+		elseif ($blockStart -ne -1 -and $blockEnd -eq -1 -and $line -eq "}")
+		{
+			$blockEnd = $i
+			break
+		}
+	}
+	if ($blockStart -ne -1 -and $blockEnd -ne -1)
+	{
+		$tempLua = $lua | ForEach-Object { "`t$_" }
+		$coreLinesNew = $coreLines[0 .. $blockStart] + $tempLua + $coreLines[$blockEnd .. ($coreLines.Length - 1)]
+		$coreLinesNew | Set-Content $coreFile
+		Write-Host ("""{0}"" has been updated" -f $coreFile.Name)
+	}
+	else
+	{
+		Write-Error "Unable to locate the block of lua code!"
+	}
+	return
+}
 
 $luaBlock
