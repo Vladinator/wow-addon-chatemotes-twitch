@@ -372,6 +372,7 @@ emotes["B0aty"] = {
 }
 
 emotes["BTTV"] = {
+	{ name = ":D:", alias = { "D:" }, file = "D/D" },
 	{ name = ":ditto:", file = "ditto/ditto_1_4_10", animated = true, duration = 10 },
 	{ name = ":tf:", file = "tf/tf" },
 	{ name = "5Head", file = "5Head/5Head" },
@@ -415,7 +416,6 @@ emotes["BTTV"] = {
 	{ name = "cvL", file = "cvL/cvL" },
 	{ name = "cvMask", file = "cvMask/cvMask" },
 	{ name = "cvR", file = "cvR/cvR" },
-	{ name = "D:", file = "D/D" },
 	{ name = "Dance", file = "Dance/Dance_1_10_5", animated = true, duration = 5 },
 	{ name = "DatSauce", file = "DatSauce/DatSauce" },
 	{ name = "ddHuh", file = "ddHuh/ddHuh_1_34_8", animated = true, duration = 8 },

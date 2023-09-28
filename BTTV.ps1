@@ -1,8 +1,8 @@
-$codeReMap = @{
+$remap = @{
 	"(ditto)" = @{ code = ":ditto:"; file = "ditto" }
 	":tf:" = @{ code = ":tf:"; file = "tf" }
 	"M&Mjc" = @{ code = "MnMjc"; file = "MnMjc" }
-	"D:" = @{ code = "D:"; file = "D" }
+	"D:" = @{ code = ":D:"; file = "D"; alias = @("D:") }
 	"h!" = @{ code = ":bttvh:"; file = "h" }
 	"l!" = @{ code = ":bttvl:"; file = "l" }
 	"r!" = @{ code = ":bttvr:"; file = "r" }
@@ -10,20 +10,29 @@ $codeReMap = @{
 	"z!" = @{ code = ":bttvz:"; file = "z" }
 	"w!" = @{ code = ":bttvw:"; file = "w" }
 	"c!" = @{ code = ":bttvc:"; file = "c" }
+	"BOOBA" = @{ alias = @("booba") }
+	"catJAM" = @{ alias = @("CatJam", "CatJAM") }
+	"pepeD" = @{ alias = @("PepeD") }
+	"PepeLaugh" = @{ alias = @("FeelsKekMan") }
 }
 
-$nameReMap = @{}
+$nameRemap = @{}
+$aliasRemap = @{}
 
-foreach ($key in $codeReMap.Keys) {
-	$name = $codeReMap[$key].file
-	$nameReMap[$name] = $codeReMap[$key].code
-}
-
-$alias = @{
-	"BOOBA" = @("booba")
-	"catJAM" = @("CatJam", "CatJAM")
-	"pepeD" = @("PepeD")
-	"PepeLaugh" = @("FeelsKekMan")
+foreach ($key in $remap.Keys) {
+	$file = $remap[$key].file
+	$code = $remap[$key].code
+	$alias = $remap[$key].alias
+	if (-not $file) { $file = $key }
+	if (-not $code) { $code = $key }
+	if ($file -ne $code)
+	{
+		$nameRemap[$file] = $code
+	}
+	if ($alias)
+	{
+		$aliasRemap[$code] = $alias
+	}
 }
 
 $download = $args.Contains("--download")
@@ -40,22 +49,22 @@ if ($download)
 	foreach ($item in $json)
 	{
 		$itemFileName = $item.code
-		$itemFileNameReMap = $codeReMap[$itemFileName]
-		if ($itemFileNameReMap)
+		$itemFileNameRemap = $remap[$itemFileName]
+		if ($itemFileNameRemap)
 		{
-			if ($itemFileNameReMap.file)
+			if ($itemFileNameRemap.file)
 			{
-				$itemFileName = $itemFileNameReMap.file
+				$itemFileName = $itemFileNameRemap.file
 			}
-			if ($itemFileNameReMap.code)
+			if ($itemFileNameRemap.code)
 			{
-				$item.code = $itemFileNameReMap.code
+				$item.code = $itemFileNameRemap.code
 			}
 		}
 		$itemFileName = $item.code -replace "[\:]+", ""
 		if ($itemFileName -match "^[A-Za-z0-9_\-]+$")
 		{
-			if ($itemFileName -ne $item.code -and (-not $itemFileNameReMap -or (-not $itemFileNameReMap.code)))
+			if ($itemFileName -ne $item.code -and (-not $itemFileNameRemap -or (-not $itemFileNameRemap.code)))
 			{
 				Write-Warning ("""{0}"" requires manual validation: ""{1}""" -f $item.code, $itemFileName)
 			}
@@ -521,17 +530,6 @@ foreach ($emote in $emotes)
 		$luaDuration = ", duration = { $($durationsTrimmed -join ", ") }"
 	}
 
-	$aliases = $alias[$name]
-	if ($aliases)
-	{
-		$aliases = $aliases -join '", "'
-		$aliases = " alias = { `"$aliases`" },"
-	}
-	else
-	{
-		$aliases = ""
-	}
-
 	$luaRatio = ""
 	$webpFilePath = Join-Path -Path $baseFolder -ChildPath "$($name).webp"
 	if (Test-Path $webpFilePath -PathType Leaf)
@@ -569,9 +567,20 @@ foreach ($emote in $emotes)
 	$firstFrameFile = [IO.Path]::GetFileNameWithoutExtension($firstFrame.File)
 	$luaFile = "$name/$firstFrameFile"
 
-	if ($nameReMap[$name])
+	if ($nameRemap[$name])
 	{
-		$name = $nameReMap[$name]
+		$name = $nameRemap[$name]
+	}
+
+	$aliases = $aliasRemap[$name]
+	if ($aliases)
+	{
+		$aliases = $aliases -join '", "'
+		$aliases = " alias = { `"$aliases`" },"
+	}
+	else
+	{
+		$aliases = ""
 	}
 
 	if ($combined)
