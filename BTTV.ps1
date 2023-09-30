@@ -1,8 +1,12 @@
+$ignore = @(
+	"emDface"
+)
+
 $remap = @{
 	"(ditto)" = @{ code = ":ditto:"; file = "ditto" }
 	":tf:" = @{ code = ":tf:"; file = "tf" }
 	"M&Mjc" = @{ code = "MnMjc"; file = "MnMjc" }
-	"D:" = @{ code = ":D:"; file = "D"; alias = @("D:") }
+	"D:" = @{ code = "emDface"; file = "D"; alias = @("D:") }
 	"h!" = @{ code = ":bttvh:"; file = "h" }
 	"l!" = @{ code = ":bttvl:"; file = "l" }
 	"r!" = @{ code = ":bttvr:"; file = "r" }
@@ -64,6 +68,10 @@ if ($download)
 		$itemFileName = $item.code -replace "[\:]+", ""
 		if ($itemFileName -match "^[A-Za-z0-9_\-]+$")
 		{
+			if ($ignore.Contains($itemFileName))
+			{
+				continue
+			}
 			if ($itemFileName -ne $item.code -and (-not $itemFileNameRemap -or (-not $itemFileNameRemap.code)))
 			{
 				Write-Warning ("""{0}"" requires manual validation: ""{1}""" -f $item.code, $itemFileName)
@@ -158,7 +166,7 @@ foreach ($webpFile in $webpFiles)
 		continue
 	}
 
-	if ($webpFileInfo.Stretch -and (-not $webpFileInfo.Animated))
+	if ($webpFileInfo.Stretch) # -and (-not $webpFileInfo.Animated)
 	{
 		& webp_frames $webpFile @args --stretch
 	}
@@ -482,6 +490,7 @@ if ($combined)
 }
 
 $lua = @()
+$luaAddedNames = @{}
 
 foreach ($emote in $emotes)
 {
@@ -537,7 +546,7 @@ foreach ($emote in $emotes)
 		$webpFileInfo = webp_info $webpFilePath
 		if ($webpFileInfo.Valid)
 		{
-			if ($webpFileInfo.Stretch -and (-not $webpFileInfo.Animated))
+			if ($webpFileInfo.Stretch) # -and (-not $webpFileInfo.Animated)
 			{
 				$luaRatio = ", ratio = {0:f}" -f $webpFileInfo.Ratio
 			}
