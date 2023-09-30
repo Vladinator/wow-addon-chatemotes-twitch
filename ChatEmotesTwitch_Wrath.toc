@@ -3,7 +3,7 @@
 ## Title: Chat Emotes (Twitch)
 ## Notes: 
 ## Author: Vladinator (Vladinator-TarrenMill)
-## Version: 3.4.2.230927 (@project-version@)
+## Version: 3.4.2.230930 (@project-version@)
 ## SavedVariables: 
 ## Dependencies: ChatEmotes
 ## X-Curse-Project-ID: 551604
