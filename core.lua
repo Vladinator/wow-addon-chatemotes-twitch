@@ -372,6 +372,7 @@ emotes["B0aty"] = {
 }
 
 emotes["BTTV"] = {
+	{ name = ":Aware:", file = "Aware/Aware_1_60_20", animated = true, duration = { [1] = 20, [2] = 5, [6] = 10, [7] = 5, [58] = 40 } },
 	{ name = ":ditto:", file = "ditto/ditto_1_4_10", animated = true, duration = 10 },
 	{ name = ":tf:", file = "tf/tf" },
 	{ name = "5Head", file = "5Head/5Head" },
@@ -379,7 +380,6 @@ emotes["BTTV"] = {
 	{ name = "AngelThump", file = "AngelThump/AngelThump", ratio = 2.98 },
 	{ name = "AquaTriggered", file = "AquaTriggered/AquaTriggered_1_4_3", animated = true, duration = 3 },
 	{ name = "ariW", file = "ariW/ariW" },
-	{ name = "Aware", file = "Aware/Aware_1_60_20", animated = true, duration = { [1] = 20, [2] = 5, [6] = 10, [7] = 5, [58] = 40 } },
 	{ name = "AYAYA", file = "AYAYA/AYAYA" },
 	{ name = "BANNED", file = "BANNED/BANNED_1_30_3", animated = true, duration = 3 },
 	{ name = "BBoomer", file = "BBoomer/BBoomer_1_13_3", animated = true, duration = { [1] = 3, [13] = 9 } },
@@ -421,6 +421,7 @@ emotes["BTTV"] = {
 	{ name = "DatSauce", file = "DatSauce/DatSauce" },
 	{ name = "ddHuh", file = "ddHuh/ddHuh_1_34_8", animated = true, duration = 8 },
 	{ name = "dekuHYPE", file = "dekuHYPE/dekuHYPE_1_6_10", animated = true, duration = 10 },
+	{ name = "DIESOFCRINGE", file = "DIESOFCRINGE/DIESOFCRINGE_1_120_10", animated = true, duration = { [1] = 10, [2] = 3, [14] = 4, [15] = 3, [47] = 4, [48] = 3, [80] = 4, [81] = 3, [113] = 4, [114] = 3 } },
 	{ name = "DisGonBGud", file = "DisGonBGud/DisGonBGud_1_116_4", animated = true, duration = { [1] = 4, [13] = 8, [14] = 4, [37] = 8, [38] = 4, [41] = 8, [42] = 4, [45] = 8, [46] = 4, [55] = 12, [56] = 4, [57] = 8, [58] = 4, [81] = 8, [82] = 4, [105] = 8, [106] = 4 } },
 	{ name = "DogChamp", file = "DogChamp/DogChamp" },
 	{ name = "dogJAM", file = "dogJAM/dogJAM_1_10_7", animated = true, duration = 7 },
@@ -496,6 +497,7 @@ emotes["BTTV"] = {
 	{ name = "OOOO", file = "OOOO/OOOO_1_21_5", animated = true, duration = 5 },
 	{ name = "PartyKirby", file = "PartyKirby/PartyKirby_1_8_4", animated = true, duration = 4 },
 	{ name = "PartyParrot", file = "PartyParrot/PartyParrot_1_90_4", animated = true, duration = 4 },
+	{ name = "PauseChamp", file = "PauseChamp/PauseChamp" },
 	{ name = "peepoArrive", file = "peepoArrive/peepoArrive_1_28_9", animated = true, duration = 9 },
 	{ name = "peepoClap", file = "peepoClap/peepoClap_1_2_10", animated = true, duration = 10 },
 	{ name = "peepoDJ", file = "peepoDJ/peepoDJ_1_72_2", animated = true, duration = 2 },
@@ -3001,7 +3003,7 @@ emotes["Suze"] = {
 	{ name = "GAmer", file = "gamer" },
 	{ name = "JanCarlo2" },
 	{ name = "LULWWW", ignoreSuggestion = true },
-	{ name = "PauseChamp" },
+	-- { name = "PauseChamp" },
 	{ name = "PepeChill", file = "pepeChill", alias = { "pepeChill" } },
 	{ name = "PepeClown", file = "pepeClown", alias = { "pepeClown" } },
 	{ name = "PepeCool", file = "pepeCool", alias = { "pepeCool" } },

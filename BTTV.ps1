@@ -18,6 +18,7 @@ $remap = @{
 	"catJAM" = @{ alias = @("CatJam", "CatJAM") }
 	"pepeD" = @{ alias = @("PepeD") }
 	"PepeLaugh" = @{ alias = @("FeelsKekMan") }
+	"Aware" = @{ code = ":Aware:" }
 }
 
 $nameRemap = @{}
@@ -490,7 +491,6 @@ if ($combined)
 }
 
 $lua = @()
-$luaAddedNames = @{}
 
 foreach ($emote in $emotes)
 {
