@@ -694,8 +694,7 @@ if ($save)
 			git add .
 			git commit -m "Added the latest BTTV emotes."
 			git tag -a $latestVersion -m $latestVersion
-			git push
-			git push origin $latestVersion
+			git push --tags
 		}
 	}
 	else
