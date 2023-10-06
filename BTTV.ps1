@@ -44,6 +44,7 @@ $download = $args.Contains("--download")
 $keep = $args.Contains("--keep")
 $combined = $args.Contains("--combined")
 $save = $args.Contains("--save")
+$git = $args.Contains("--git")
 
 $cwd = Get-Item -Path "."
 $baseFolder = Get-Item -Path ".\emotes\BTTV"
@@ -491,6 +492,7 @@ if ($combined)
 }
 
 $lua = @()
+$dupeEmoteChecks = @()
 
 foreach ($emote in $emotes)
 {
@@ -608,6 +610,8 @@ foreach ($emote in $emotes)
 		$lua += "{{ name = `"{0}`",{1} file = `"{2}`"{3}{4}{5} }}," -f $name, $aliases, $luaFile, $luaRatio, $luaAnimated, $luaDuration
 	}
 
+	$dupeEmoteChecks += " (name = `"{0}`"|alias = {{.*?`"{0}`".*?}})" -f $name
+
 }
 
 $lua = $lua | Sort-Object -Unique
@@ -641,10 +645,58 @@ if ($save)
 	}
 	if ($blockStart -ne -1 -and $blockEnd -ne -1)
 	{
+		$startPart = $coreLines[0 .. $blockStart]
+		$endPart = $coreLines[$blockEnd .. ($coreLines.Length - 1)]
+		$dupeWarning = @()
+		foreach ($dupeEmoteCheck in $dupeEmoteChecks)
+		{
+			$matches1 = $startPart | Select-String $dupeEmoteCheck -CaseSensitive
+			$matches2 = $endPart | Select-String $dupeEmoteCheck -CaseSensitive
+			if ($matches1.Count -gt 0)
+			{
+				$matches1 | ForEach-Object { if (-not ($_.Line -match "^\s*--\s*")) { $dupeWarning += $_.Line } }
+			}
+			if ($matches2.Count -gt 0)
+			{
+				$matches2 | ForEach-Object { if (-not ($_.Line -match "^\s*--\s*")) { $dupeWarning += $_.Line } }
+			}
+		}
+		if ($dupeWarning.Count -gt 0)
+		{
+			Write-Warning "These emotes collide with our BTTV emotes:"
+			$dupeWarning | ForEach-Object { Write-Warning $_ }
+		}
 		$tempLua = $lua | ForEach-Object { "`t$_" }
-		$coreLinesNew = $coreLines[0 .. $blockStart] + $tempLua + $coreLines[$blockEnd .. ($coreLines.Length - 1)]
+		$coreLinesNew = $startPart + $tempLua + $endPart
 		$coreLinesNew | Set-Content $coreFile
 		Write-Host ("""{0}"" has been updated" -f $coreFile.Name)
+		$tocFilesPattern = Join-Path -Path $cwd -ChildPath "*.toc"
+		$tocFiles = Get-ChildItem -Path $tocFilesPattern
+		$tocDate = (Get-Date).AddHours(-12).ToString("yyMMdd")
+		$latestVersion = $null
+		foreach ($tocFile in $tocFiles)
+		{
+			$tocLines = Get-Content $tocFile
+			foreach ($tocLine in $tocLines)
+			{
+				if ($tocLine -match "(## Version: )((\d+)\.(\d+)\.(\d+))\.(\d+)( \(@project-version@\))")
+				{
+					$newTocLine = "{0}{1}.{2}{3}" -f $matches[1], $matches[2], $tocDate, $matches[7]
+					$tocLines = $tocLines.Replace($tocLine, $newTocLine)
+					$latestVersion = "v{0}.{1}" -f $matches[2], $tocDate
+					break
+				}
+			}
+			$tocLines | Set-Content $tocFile -Force
+		}
+		if ($git -and $latestVersion -and $dupeWarning.Count -eq 0)
+		{
+			git add .
+			git commit -m "Added the latest BTTV emotes."
+			git tag -a $latestVersion -m $latestVersion
+			git push
+			git push origin $latestVersion
+		}
 	}
 	else
 	{
