@@ -19,6 +19,7 @@ $remap = @{
 	"pepeD" = @{ alias = @("PepeD") }
 	"PepeLaugh" = @{ alias = @("FeelsKekMan") }
 	"Aware" = @{ code = ":Aware:" }
+	"peepoGiggles" =@{ alias = @("peepoGiggle") }
 }
 
 $nameRemap = @{}
