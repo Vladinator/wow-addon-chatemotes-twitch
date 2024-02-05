@@ -693,7 +693,7 @@ if ($save)
 		if ($git -and $latestVersion -and $dupeWarning.Count -eq 0)
 		{
 			git add .
-			git commit -m "Added the latest BTTV emotes."
+			git commit -a -m "Added the latest BTTV emotes."
 			git tag -a $latestVersion -m $latestVersion
 			git push --tags
 		}

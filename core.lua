@@ -467,6 +467,7 @@ emotes["BTTV"] = {
 	{ name = "iron95Pls", file = "iron95Pls/iron95Pls_1_299_4", animated = true, duration = { [1] = 4, [150] = 8, [151] = 4 } },
 	{ name = "Jammies", file = "Jammies/Jammies_1_6_10", animated = true, duration = 10 },
 	{ name = "JammiesHalloween", file = "JammiesHalloween/JammiesHalloween_1_6_10", animated = true, duration = 10 },
+	{ name = "Jigglin", file = "Jigglin/Jigglin_1_62_3", animated = true, duration = { [1] = 3, [4] = 7, [5] = 3, [14] = 6, [15] = 3, [24] = 6, [25] = 3, [34] = 7, [35] = 3, [44] = 6, [45] = 3, [54] = 6, [55] = 3 } },
 	{ name = "Joel", file = "Joel/Joel_1_36_6", ratio = 3.00, animated = true, duration = { [1] = 6, [2] = 4, [4] = 2, [5] = 4, [18] = 2, [19] = 4, [21] = 6, [22] = 4, [25] = 2, [26] = 4, [31] = 6, [32] = 2, [33] = 4 } },
 	{ name = "KappaCool", file = "KappaCool/KappaCool", ratio = 0.79 },
 	{ name = "KaRappa", file = "KaRappa/KaRappa" },
