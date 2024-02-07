@@ -451,6 +451,7 @@ emotes["BTTV"] = {
 	{ name = "gachiBASS", file = "gachiBASS/gachiBASS_1_10_2", animated = true, duration = 2 },
 	{ name = "gachiGASM", file = "gachiGASM/gachiGASM" },
 	{ name = "gachiHYPER", file = "gachiHYPER/gachiHYPER_1_60_2", animated = true, duration = 2 },
+	{ name = "GAMING", file = "GAMING/GAMING_1_180_2", animated = true, duration = 2 },
 	{ name = "GandalfPls", file = "GandalfPls/GandalfPls_1_5_5", animated = true, duration = 5 },
 	{ name = "GIGACHAD", file = "GIGACHAD/GIGACHAD_1_198_4", animated = true, duration = 4 },
 	{ name = "gorgHAIP", file = "gorgHAIP/gorgHAIP_1_18_2", animated = true, duration = 2 },
