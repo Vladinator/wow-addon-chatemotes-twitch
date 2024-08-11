@@ -1,3 +1,12 @@
+# To download any new emojis, update the db files, then make a release:
+# .\BTTV.ps1 --download --save --git
+
+# The script requires these tools:
+# `libwebp` release for the `webpinfo` binary
+# `ImageMagick` release for the `magick` binary
+# `webp_frames.ps1` a custom script that takes a webp file and converts it to individual images using `webp2gif`
+# `blppng.ps1` a custom script that takes a blp and converts it into png using `BLP2PNG` by John Stephen
+
 $ignore = @(
 	"emDface"
 )
@@ -14,6 +23,8 @@ $remap = @{
 	"z!" = @{ code = ":bttvz:"; file = "z" }
 	"w!" = @{ code = ":bttvw:"; file = "w" }
 	"c!" = @{ code = ":bttvc:"; file = "c" }
+	"s!" = @{ code = ":bttvs:"; file = "s" }
+	"p!" = @{ code = ":bttvp:"; file = "p" }
 	"BOOBA" = @{ alias = @("booba") }
 	"catJAM" = @{ alias = @("CatJam", "CatJAM") }
 	"pepeD" = @{ alias = @("PepeD") }
