@@ -413,6 +413,7 @@ emotes["BTTV"] = {
 	{ name = "chikaYo", file = "chikaYo/chikaYo_1_57_10", animated = true, duration = { [1] = 10, [30] = 15, [31] = 10, [34] = 5, [35] = 15, [36] = 10, [39] = 5, [40] = 15, [41] = 10, [44] = 5, [45] = 15, [46] = 10, [49] = 5, [50] = 15, [51] = 10, [54] = 5, [55] = 15, [56] = 5 } },
 	{ name = "ChipiChipi", file = "ChipiChipi/ChipiChipi_1_24_3", animated = true, duration = { [1] = 3, [2] = 4, [3] = 3, [5] = 4, [6] = 3, [8] = 4, [9] = 3, [11] = 4, [12] = 3, [14] = 4, [15] = 3, [17] = 4, [18] = 3, [20] = 4, [21] = 3, [23] = 4, [24] = 3 } },
 	{ name = "CiGrip", file = "CiGrip/CiGrip" },
+	{ name = "Cinema", file = "Cinema/Cinema", ratio = 2.66 },
 	{ name = "Clap", file = "Clap/Clap_1_2_20", animated = true, duration = 20 },
 	{ name = "Classic", file = "Classic/Classic_1_51_5", ratio = 1.12, animated = true, duration = 5 },
 	{ name = "coffinPls", file = "coffinPls/coffinPls_1_182_3", animated = true, duration = 3 },
