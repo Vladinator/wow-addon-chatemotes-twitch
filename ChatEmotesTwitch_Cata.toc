@@ -1,9 +1,9 @@
-## Interface: 30403
+## Interface: 40401
 ## IconTexture: 2056011
 ## Title: Chat Emotes (Twitch)
 ## Notes: 
 ## Author: Vladinator (Vladinator-TarrenMill)
-## Version: 3.4.3.241005 (@project-version@)
+## Version: 4.4.1.241124 (@project-version@)
 ## SavedVariables: 
 ## Dependencies: ChatEmotes
 ## X-Curse-Project-ID: 551604
